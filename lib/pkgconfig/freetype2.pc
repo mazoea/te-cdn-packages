@@ -1,0 +1,14 @@
+prefix="/opt/mazoea/installation"
+exec_prefix="/opt/mazoea/installation"
+libdir="/opt/mazoea/installation/lib"
+includedir="/opt/mazoea/installation/include/freetype2"
+
+Name: FreeType 2
+URL: http://freetype.org
+Description: A free, high-quality, and portable font engine.
+Version: 17.2.11
+Requires:
+Requires.private: 
+Libs: -L${libdir} -lfreetype
+Libs.private: -lz -lbz2 -L/opt/mazoea/installation/libs -lpng
+Cflags: -I${includedir}
