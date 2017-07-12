@@ -45,7 +45,7 @@ class Tesseract;
 // See also ResultIterator, derived from PageIterator, which adds in the
 // ability to access OCR output with text-specific methods.
 
-class PageIterator {
+class TESSDLL_API PageIterator {
  public:
   // page_res and tesseract come directly from the BaseAPI.
   // The rectangle parameters are copied indirectly from the Thresholder,

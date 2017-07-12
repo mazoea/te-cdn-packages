@@ -20,6 +20,14 @@
 #ifndef TESSERACT_CCSTRUCT_PUBLICTYPES_H__
 #define TESSERACT_CCSTRUCT_PUBLICTYPES_H__
 
+#ifdef TESSDLL_EXPORTS
+#define TESSDLL_API __declspec(dllexport)
+#elif defined(TESSDLL_IMPORTS)
+#define TESSDLL_API __declspec(dllimport)
+#else
+#define TESSDLL_API
+#endif
+
 // This file contains types that are used both by the API and internally
 // to Tesseract. In order to decouple the API from Tesseract and prevent cyclic
 // dependencies, THIS FILE SHOULD NOT DEPEND ON ANY OTHER PART OF TESSERACT.

@@ -514,7 +514,7 @@ void GenericVector<T>::insert(T t, int index) {
 // shifts the remaining elements to the left.
 template <typename T>
 void GenericVector<T>::remove(int index) {
-  ASSERT_HOST(index >= 0 && index < size_used_);
+  // ASSERT_HOST(index >= 0 && index < size_used_);
   for (int i = index; i < size_used_ - 1; ++i) {
     data_[i] = data_[i+1];
   }

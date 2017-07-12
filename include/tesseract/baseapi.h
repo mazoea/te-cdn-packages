@@ -52,15 +52,6 @@ typedef INT_FEATURE_STRUCT *INT_FEATURE;
 typedef INT_FEATURE_STRUCT INT_FEATURE_ARRAY[MAX_NUM_INT_FEATURES];
 struct TBLOB;
 
-#ifdef TESSDLL_EXPORTS
-#define TESSDLL_API __declspec(dllexport)
-#elif defined(TESSDLL_IMPORTS)
-#define TESSDLL_API __declspec(dllimport)
-#else
-#define TESSDLL_API
-#endif
-
-
 namespace tesseract {
 
 class CubeRecoContext;

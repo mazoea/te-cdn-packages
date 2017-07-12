@@ -40,7 +40,7 @@ class Tesseract;
 // See also base class PageIterator, which contains the bulk of the interface.
 // ResultIterator adds text-specific methods for access to OCR output.
 
-class ResultIterator : public PageIterator {
+class TESSDLL_API ResultIterator : public PageIterator {
   friend class ChoiceIterator;
  public:
   // page_res and tesseract come directly from the BaseAPI.
@@ -124,7 +124,7 @@ class ResultIterator : public PageIterator {
 };
 
 // Class to iterate over the classifier choices for a single RIL_SYMBOL.
-class ChoiceIterator {
+class TESSDLL_API ChoiceIterator {
  public:
   // Construction is from a ResultIterator that points to the symbol of
   // interest. The ChoiceIterator allows a one-shot iteration over the
