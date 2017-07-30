@@ -5,8 +5,8 @@ includedir=${prefix}/include/leptonica
 
 Name: leptonica
 Description: An open source C library for efficient image processing and image analysis operations
-Version: 1.74.2
+Version: 1.74.4
 Libs: -L${libdir} -llept
-Libs.private: -lz -lpng -ljpeg -lgif -ltiff 
+Libs.private: -lz   -lpng -ljpeg -lgif -ltiff 
 Cflags: -I${includedir}
 

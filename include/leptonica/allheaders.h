@@ -30,7 +30,7 @@
 
 #define LIBLEPT_MAJOR_VERSION   1
 #define LIBLEPT_MINOR_VERSION   74
-#define LIBLEPT_PATCH_VERSION   2
+#define LIBLEPT_PATCH_VERSION   4
 
 #include "alltypes.h"
 
@@ -119,7 +119,7 @@ LEPT_DLL extern l_int32 l_getDataFourBytes ( void *line, l_int32 n );
 LEPT_DLL extern void l_setDataFourBytes ( void *line, l_int32 n, l_int32 val );
 LEPT_DLL extern char * barcodeDispatchDecoder ( char *barstr, l_int32 format, l_int32 debugflag );
 LEPT_DLL extern l_int32 barcodeFormatIsSupported ( l_int32 format );
-LEPT_DLL extern NUMA * pixFindBaselines ( PIX *pixs, PTA **ppta, l_int32 debug );
+LEPT_DLL extern NUMA * pixFindBaselines ( PIX *pixs, PTA **ppta, PIXA *pixadb );
 LEPT_DLL extern PIX * pixDeskewLocal ( PIX *pixs, l_int32 nslices, l_int32 redsweep, l_int32 redsearch, l_float32 sweeprange, l_float32 sweepdelta, l_float32 minbsdelta );
 LEPT_DLL extern l_int32 pixGetLocalSkewTransform ( PIX *pixs, l_int32 nslices, l_int32 redsweep, l_int32 redsearch, l_float32 sweeprange, l_float32 sweepdelta, l_float32 minbsdelta, PTA **pptas, PTA **pptad );
 LEPT_DLL extern NUMA * pixGetLocalSkewAngles ( PIX *pixs, l_int32 nslices, l_int32 redsweep, l_int32 redsearch, l_float32 sweeprange, l_float32 sweepdelta, l_float32 minbsdelta, l_float32 *pa, l_float32 *pb, l_int32 debug );
@@ -1360,9 +1360,11 @@ LEPT_DLL extern l_int32 pixSplitIntoCharacters ( PIX *pixs, l_int32 minw, l_int3
 LEPT_DLL extern BOXA * pixSplitComponentWithProfile ( PIX *pixs, l_int32 delta, l_int32 mindel, PIX **ppixdebug );
 LEPT_DLL extern PIXA * pixExtractTextlines ( PIX *pixs, l_int32 maxw, l_int32 maxh, l_int32 minw, l_int32 minh, l_int32 adjw, l_int32 adjh, PIXA *pixadb );
 LEPT_DLL extern PIXA * pixExtractRawTextlines ( PIX *pixs, l_int32 maxw, l_int32 maxh, l_int32 adjw, l_int32 adjh, PIXA *pixadb );
+LEPT_DLL extern l_int32 pixCountTextColumns ( PIX *pixs, l_float32 deltafract, l_float32 peakfract, l_float32 clipfract, l_int32 *pncols, PIXA *pixadb );
 LEPT_DLL extern l_int32 pixDecideIfText ( PIX *pixs, BOX *box, l_int32 *pistext, PIXA *pixadb );
 LEPT_DLL extern l_int32 pixFindThreshFgExtent ( PIX *pixs, l_int32 thresh, l_int32 *ptop, l_int32 *pbot );
-LEPT_DLL extern l_int32 pixCountTextColumns ( PIX *pixs, l_float32 deltafract, l_float32 peakfract, l_float32 clipfract, l_int32 *pncols, PIXA *pixadb );
+LEPT_DLL extern l_int32 pixDecideIfTable ( PIX *pixs, BOX *box, l_int32 orient, l_int32 *pscore, PIXA *pixadb );
+LEPT_DLL extern PIX * pixPrepare1bpp ( PIX *pixs, BOX *box, l_float32 cropfract, l_int32 outres );
 LEPT_DLL extern l_int32 pixEstimateBackground ( PIX *pixs, l_int32 darkthresh, l_float32 edgecrop, l_int32 *pbg );
 LEPT_DLL extern l_int32 pixFindLargeRectangles ( PIX *pixs, l_int32 polarity, l_int32 nrect, BOXA **pboxa, PIX **ppixdb );
 LEPT_DLL extern l_int32 pixFindLargestRectangle ( PIX *pixs, l_int32 polarity, BOX **pbox, PIX **ppixdb );
@@ -1783,7 +1785,7 @@ LEPT_DLL extern PIX * pixaaDisplayByPixa ( PIXAA *paa, l_int32 xspace, l_int32 y
 LEPT_DLL extern PIXA * pixaaDisplayTiledAndScaled ( PIXAA *paa, l_int32 outdepth, l_int32 tilewidth, l_int32 ncols, l_int32 background, l_int32 spacing, l_int32 border );
 LEPT_DLL extern PIXA * pixaConvertTo1 ( PIXA *pixas, l_int32 thresh );
 LEPT_DLL extern PIXA * pixaConvertTo8 ( PIXA *pixas, l_int32 cmapflag );
-LEPT_DLL extern PIXA * pixaConvertTo8Color ( PIXA *pixas, l_int32 dither );
+LEPT_DLL extern PIXA * pixaConvertTo8Colormap ( PIXA *pixas, l_int32 dither );
 LEPT_DLL extern PIXA * pixaConvertTo32 ( PIXA *pixas );
 LEPT_DLL extern PIXA * pixaConstrainedSelect ( PIXA *pixas, l_int32 first, l_int32 last, l_int32 nmax, l_int32 use_pairs, l_int32 copyflag );
 LEPT_DLL extern l_int32 pixaSelectToPdf ( PIXA *pixas, l_int32 first, l_int32 last, l_int32 res, l_float32 scalefactor, l_int32 type, l_int32 quality, l_uint32 color, l_int32 fontsize, const char *fileout );
@@ -1899,7 +1901,7 @@ LEPT_DLL extern PIX * pixConvertTo1 ( PIX *pixs, l_int32 threshold );
 LEPT_DLL extern PIX * pixConvertTo1BySampling ( PIX *pixs, l_int32 factor, l_int32 threshold );
 LEPT_DLL extern PIX * pixConvertTo8 ( PIX *pixs, l_int32 cmapflag );
 LEPT_DLL extern PIX * pixConvertTo8BySampling ( PIX *pixs, l_int32 factor, l_int32 cmapflag );
-LEPT_DLL extern PIX * pixConvertTo8Color ( PIX *pixs, l_int32 dither );
+LEPT_DLL extern PIX * pixConvertTo8Colormap ( PIX *pixs, l_int32 dither );
 LEPT_DLL extern PIX * pixConvertTo16 ( PIX *pixs );
 LEPT_DLL extern PIX * pixConvertTo32 ( PIX *pixs );
 LEPT_DLL extern PIX * pixConvertTo32BySampling ( PIX *pixs, l_int32 factor );
@@ -2243,6 +2245,7 @@ LEPT_DLL extern l_int32 regTestCompareSimilarPix ( L_REGPARAMS *rp, PIX *pix1, P
 LEPT_DLL extern l_int32 regTestCheckFile ( L_REGPARAMS *rp, const char *localname );
 LEPT_DLL extern l_int32 regTestCompareFiles ( L_REGPARAMS *rp, l_int32 index1, l_int32 index2 );
 LEPT_DLL extern l_int32 regTestWritePixAndCheck ( L_REGPARAMS *rp, PIX *pix, l_int32 format );
+LEPT_DLL extern l_int32 regTestWriteDataAndCheck ( L_REGPARAMS *rp, void *data, size_t nbytes, const char *ext );
 LEPT_DLL extern char * regTestGenLocalFilename ( L_REGPARAMS *rp, l_int32 index, l_int32 format );
 LEPT_DLL extern l_int32 pixRasterop ( PIX *pixd, l_int32 dx, l_int32 dy, l_int32 dw, l_int32 dh, l_int32 op, PIX *pixs, l_int32 sx, l_int32 sy );
 LEPT_DLL extern l_int32 pixRasteropVip ( PIX *pixd, l_int32 bx, l_int32 bw, l_int32 vshift, l_int32 incolor );
@@ -2510,6 +2513,7 @@ LEPT_DLL extern l_int32 pixHShearIP ( PIX *pixs, l_int32 yloc, l_float32 radang,
 LEPT_DLL extern l_int32 pixVShearIP ( PIX *pixs, l_int32 xloc, l_float32 radang, l_int32 incolor );
 LEPT_DLL extern PIX * pixHShearLI ( PIX *pixs, l_int32 yloc, l_float32 radang, l_int32 incolor );
 LEPT_DLL extern PIX * pixVShearLI ( PIX *pixs, l_int32 xloc, l_float32 radang, l_int32 incolor );
+LEPT_DLL extern PIX * pixDeskewBoth ( PIX *pixs, l_int32 redsearch );
 LEPT_DLL extern PIX * pixDeskew ( PIX *pixs, l_int32 redsearch );
 LEPT_DLL extern PIX * pixFindSkewAndDeskew ( PIX *pixs, l_int32 redsearch, l_float32 *pangle, l_float32 *pconf );
 LEPT_DLL extern PIX * pixDeskewGeneral ( PIX *pixs, l_int32 redsweep, l_float32 sweeprange, l_float32 sweepdelta, l_int32 redsearch, l_int32 thresh, l_float32 *pangle, l_float32 *pconf );
