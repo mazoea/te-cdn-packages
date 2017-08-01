@@ -377,7 +377,8 @@ enum {
 
 #else
   #ifndef MINIMUM_SEVERITY
-    #define MINIMUM_SEVERITY    L_SEVERITY_INFO    /*!< Compile-time default */
+    // MAZOEA s.r.o. changed from L_SEVERITY_INFO
+    #define MINIMUM_SEVERITY    L_SEVERITY_WARNING    /*!< Compile-time default */
   #endif
 
   #ifndef DEFAULT_SEVERITY
