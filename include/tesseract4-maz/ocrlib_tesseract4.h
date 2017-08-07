@@ -4,8 +4,6 @@
 //
 #pragma once
 
-#pragma once
-
 #if defined(_WIN32) || defined(__CYGWIN__)
     #if defined(TESS_MAZ_EXPORTS)
         #define TESS_MAZ_API __declspec(dllexport)
@@ -28,7 +26,7 @@
 namespace maz {
     namespace ocr {
 
-        TESS_MAZ_API std::shared_ptr<engine> tesseract3();
+        TESS_MAZ_API std::shared_ptr<engine> tesseract4();
 
     } // namespace
 } // namespace
