@@ -4,8 +4,6 @@
 //
 #pragma once
 
-#pragma once
-
 #if defined(_WIN32) || defined(__CYGWIN__)
     #if defined(TESS_MAZ_EXPORTS)
         #define TESS_MAZ_API __declspec(dllexport)
