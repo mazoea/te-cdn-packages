@@ -1,0 +1,33 @@
+language: c
+reset_minion: true
+python:
+  - 2.7
+compiler:
+  - gcc
+env:
+  global:
+    - LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8
+    - TE_LIBS=/opt/mazoea/installation
+  matrix:
+    - GCCVERSION=4.8 CPU_NATIVE=false
+    - GCCVERSION=8 CPU_NATIVE=true
+
+build:
+  pre_ci_boot:
+    image_name: drydock/u14cppall
+    image_tag: v7.1.1
+    pull: true
+    options: "-e HOME=/root"
+  ci:
+    - cd scripts
+    - ./os.specific.sh
+    - ./compile.sh
+
+integrations:
+    notifications:
+      - integrationName: email
+        type: email
+        recipients:
+            - ci@mazoea.com
+        on_success: change
+        on_failure: always
