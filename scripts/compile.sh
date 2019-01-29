@@ -154,7 +154,7 @@ URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
 LIB_SO=$TE_LIBS/lib/libjpeg.so
 LIB_A=$TE_LIBS/lib/libjpeg.a
 if [[ ! -f $LIB_A ]]; then
-    download_and_unpack_generic $PACKAGE_RAW.tar.gz $PACKAGE $URL "tar xzvf"
+    download_and_unpack_generic $PACKAGE.tar.gz $PACKAGE $URL "tar xzvf"
     cd $PACKAGE
     time install_raw $PACKAGE
     check_ldd $LIB_SO
