@@ -23,18 +23,12 @@ else
     YUM_AVAIL=false
 fi
 
-if [[ "x$HD" == "x" ]]; then
-    echo '$HD' must be set!
-    exit 1
-fi
-
 TRIMMER="tail -100" 
 
 if [[ "x$SLACK" == "x" ]]; then
     echo '$SLACK' not set - will be ignored!
 fi
 
-echo "Using $HD as main directory"
 echo "Using $TE_LIBS_LOGS as logging directory"
 
 mkdir -p $TE_LIBS || true
