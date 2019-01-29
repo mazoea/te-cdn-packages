@@ -11,7 +11,7 @@ entered "$LOCAL_THISSCRIPT"
 LOCAL_start=`date +%s` 
 
 pushd ..
-
+LOCALCDN=$LOCAL_THISDIR/..
 export MAKE_AUTOCONF=true
 export MAKE_AUTOMAKE=true
 
@@ -26,7 +26,7 @@ if [[ "x$MAKE_AUTOCONF" == "xtrue" && "x$AUTOCONF_VERSION" != "x$VER" ]]; then
     PACKAGE=autoconf-$VER
     #URL=http://ftp.gnu.org/gnu/autoconf/$PACKAGE.tar.gz
     URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
-    autoconf --version | grep autoconf
+    autoconf --version | grep autoconf || true
     install_dep_with_autoconf $PACKAGE $URL " --prefix=/usr" 
     sudo cp ./bin/autoconf /usr/bin/autoconf
     autoconf --version | grep autoconf

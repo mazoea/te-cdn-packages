@@ -20,6 +20,13 @@ g++ --version || echo "g++ not present"
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 sudo apt-get update &> /dev/null
 
+if [[ -f $FS/apt-requirements.txt ]]; then
+    echo "apt-ing"
+    sudo apt-get -qq update
+    echo "apt-ing $FS/apt-requirements.txt"
+    xargs apt-get -q install -y < $FS/apt-requirements.txt
+fi 
+
 #GGMAJOR=`g++ -dumpversion | cut -f1 -d.`
 if [[ "x$GCCVERSION" != "x" ]]; then
     VERSION=$GCCVERSION
@@ -27,7 +34,7 @@ else
     VERSION=4.8
 fi
 echo "installing g++$VERSION"
-sudo apt-get -q install -y git gcc-$VERSION g++-$VERSION
+sudo apt-get -q install -y gcc-$VERSION g++-$VERSION
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$VERSION 90 --slave /usr/bin/g++ g++ /usr/bin/g++-$VERSION
 gcc --version || echo "gcc not present"
 g++ --version || echo "g++ not present"
