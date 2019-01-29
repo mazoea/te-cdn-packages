@@ -9,7 +9,6 @@ env:
     - LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8
     - TE_LIBS=/opt/mazoea/installation
   matrix:
-    - GCCVERSION=4.8 CPU_NATIVE=false
     - GCCVERSION=8 CPU_NATIVE=true
 
 build:
