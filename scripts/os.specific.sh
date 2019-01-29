@@ -2,10 +2,11 @@
 THISDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 export FS=$THISDIR/..
-export HD=/opt/mazoea
-
-export TE_LIBS=$HD/installation
-export TE_LIBS_LOGS=$TE_LIBS/__logs
+if [[ "x$TE_LIBS" == "x" ]]; then
+    export HD=/opt/mazoea
+    export TE_LIBS=$HD/installation
+    export TE_LIBS_LOGS=$TE_LIBS/__logs
+fi
 
 locale -a
 update-locale LANG=$LANG || echo "problem setting locale"
