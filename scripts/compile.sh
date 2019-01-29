@@ -21,8 +21,8 @@ export MAKE_AUTOMAKE=true
 
 cd $TE_LIBS
 VER=2.69
-AUTOCONF_VERSION=`autoconf --version | grep autoconf | cut -d' ' -f 4 || true`
-if [[ "x$MAKE_AUTOCONF" == "xtrue" && "x$AUTOCONF_VERSION" != "x$VER" ]]; then
+INSTALLED_VERSION=`autoconf --version | grep autoconf | cut -d' ' -f 4 || true`
+if [[ "x$MAKE_AUTOCONF" == "xtrue" && "x$INSTALLED_VERSION" != "x$VER" ]]; then
     PACKAGE=autoconf-$VER
     #URL=http://ftp.gnu.org/gnu/autoconf/$PACKAGE.tar.gz
     URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
@@ -38,12 +38,13 @@ autoconf --version
 minisep
 
 cd $TE_LIBS
-if [[ "x$MAKE_AUTOMAKE" == "xtrue" ]]; then
-    VER=1.15
+VER=1.15
+INSTALLED_VERSION=`automake --version | grep automake | cut -d' ' -f 4 || true`
+if [[ "x$MAKE_AUTOMAKE" == "xtrue" && "x$INSTALLED_VERSION" != "x$VER" ]]; then
     PACKAGE=automake-$VER
     #URL=http://ftp.gnu.org/gnu/automake/$PACKAGE.tar.gz
     URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
-    automake --version
+    automake --version || true
     cd $TE_LIBS
     download_and_unpack_tar_gz $PACKAGE $URL
     cd $PACKAGE
@@ -134,7 +135,7 @@ if [[ ! -f $LIB_A ]]; then
     cd $TE_LIBS
     download_and_unpack_tar_gz $PACKAGE $URL
     cd $PACKAGE
-    autoreconf --force --install > $TE_LIBS_LOGS/$PACKAGE.autoreconf.log 2>&1
+    autoreconf --force --install # > $TE_LIBS_LOGS/$PACKAGE.autoreconf.log 2>&1
     time install_raw $PACKAGE
     check_ldd $LIB_SO
 fi
