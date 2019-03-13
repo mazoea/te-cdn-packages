@@ -122,24 +122,25 @@ fi
 #
 cd $TE_LIBS
 
-echo "Using MAZOEA LEPTONICA - using GIFLIB 5.x"
-VER=5.1.4
-#URL=http://sourceforge.net/projects/giflib/files/giflib-$VER.tar.gz/download
+if [[ "x$COMPILE_GIFLIB" != "xfalse" ]]; then
+    echo "Using MAZOEA LEPTONICA - using GIFLIB 5.x"
+    VER=5.1.4
+    #URL=http://sourceforge.net/projects/giflib/files/giflib-$VER.tar.gz/download
 
-PACKAGE=giflib-$VER
-URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
+    PACKAGE=giflib-$VER
+    URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
 
-LIB_SO=$TE_LIBS/lib/libgif.so
-LIB_A=$TE_LIBS/lib/libgif.a
-if [[ ! -f $LIB_A ]]; then
-    cd $TE_LIBS
-    download_and_unpack_tar_gz $PACKAGE $URL
-    cd $PACKAGE
-    autoreconf --force --install # > $TE_LIBS_LOGS/$PACKAGE.autoreconf.log 2>&1
-    time install_raw $PACKAGE
-    check_ldd $LIB_SO
+    LIB_SO=$TE_LIBS/lib/libgif.so
+    LIB_A=$TE_LIBS/lib/libgif.a
+    if [[ ! -f $LIB_A ]]; then
+        cd $TE_LIBS
+        download_and_unpack_tar_gz $PACKAGE $URL
+        cd $PACKAGE
+        autoreconf --force --install # > $TE_LIBS_LOGS/$PACKAGE.autoreconf.log 2>&1
+        time install_raw $PACKAGE
+        check_ldd $LIB_SO
+    fi
 fi
-
 
 #=====================================================
 # libjpeg
