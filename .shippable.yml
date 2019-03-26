@@ -15,7 +15,7 @@ env:
 build:
   pre_ci_boot:
     image_name: drydock/u14cppall
-    image_tag: v7.1.1
+    image_tag: v7.2.4
     pull: true
     options: "-e HOME=/root"
   ci:
