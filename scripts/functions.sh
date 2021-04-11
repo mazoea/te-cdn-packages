@@ -8,9 +8,6 @@
 # paths
 #=====================================================
 
-source ~/.bash_profile || echo "bash profile not found"
-source ~/.bashrc || echo "bash rc not found"
-
 if [[ -n "$(command -v apt)" ]]; then
     APT_AVAIL=true
 else
@@ -25,16 +22,21 @@ fi
 
 TRIMMER="tail -100" 
 
-if [[ "x$SLACK" == "x" ]]; then
-    echo '$SLACK' not set - will be ignored!
+# if [[ "x$SLACK" == "x" ]]; then
+#     echo '$SLACK' not set - will be ignored!
+# fi
+
+if [[ "x$TE_LIBS_LOGS" == "x" ]]; then
+    export TE_LIBS_LOGS=/tmp/
 fi
-
-echo "Using $TE_LIBS_LOGS as logging directory"
-
-mkdir -p $TE_LIBS || true
 mkdir -p $TE_LIBS_LOGS || true
-mkdir -p $TE_LIBS/lib || true
-mkdir -p $TE_LIBS/include || true
+
+# echo "Using $TE_LIBS_LOGS as logging directory"
+if [[ "x$TE_LIBS" != "x" ]]; then
+    mkdir -p $TE_LIBS || true
+    mkdir -p $TE_LIBS/lib || true
+    mkdir -p $TE_LIBS/include || true
+fi
 
 
 #=====================================================
