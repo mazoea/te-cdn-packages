@@ -1,0 +1,47 @@
+name: ☃ build-and-test
+on: [push, pull_request]
+
+env:
+  REPO_NAME: te-cdn-packages
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.extract-branch.outputs.branch }}
+    steps:
+      - id: extract-branch
+        run: echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
+
+  build-and-deploy:
+    needs: configure
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        include:
+          - GCCVERSION: 7
+            IMAGE_TAG: u14g7
+          - GCCVERSION: 8
+            IMAGE_TAG: u14g8
+    env:
+      BUILDER: ci-at-${{ needs.configure.outputs.branch }}
+      VERSION: ${{ github.run_id }}
+      GCCVERSION: ${{ matrix.GCCVERSION }}
+      CPU_NATIVE: false
+      SLACK: ${{ secrets.SLACK_WEBHOOK_URL }}
+      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      TE_LIBS: /opt/mazoea/installation
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: build
+        working-directory: scripts
+        run: |
+          ./os.specific.sh
+          ./build.sh
