@@ -10,18 +10,12 @@ defaults:
 
 jobs:
   configure:
-    runs-on: 	ubuntu-latest
+    runs-on: ubuntu-latest
     outputs:
       branch: ${{ steps.extract-branch.outputs.branch }}
-      uid: ${{ steps.extract-uid.outputs.uid }}
-      gid: ${{ steps.extract-gid.outputs.gid }}
     steps:
       - id: extract-branch
         run: echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
-      - id: extract-uid
-        run: echo "::set-output name=uid::$(id -u)"
-      - id: extract-gid
-        run: echo "::set-output name=gid::$(id -g)"
 
   build-and-deploy:
     needs: configure
@@ -31,65 +25,23 @@ jobs:
       matrix:
         include:
           - GCCVERSION: 7
-            CDN_BRANCH: ubuntu
             IMAGE_TAG: u14g7
           - GCCVERSION: 8
-            CDN_BRANCH: u14gcc8
             IMAGE_TAG: u14g8
+    env:
+      BUILDER: ci-at-${{ needs.configure.outputs.branch }}
+      VERSION: ${{ github.run_id }}
+      GCCVERSION: ${{ matrix.GCCVERSION }}
+      CPU_NATIVE: false
+      SLACK: ${{ secrets.SLACK_WEBHOOK_URL }}
+      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      TE_LIBS: /opt/mazoea/installation
 
-    container: 
-      env:
-        BUILDER: ci-at-${{ needs.configure.outputs.branch }}
-        VERSION: ${{ github.run_id }}
-        BUILD_TYPE: RelWithDebInfo
-        CDN_BRANCH: ${{ matrix.CDN_BRANCH }}
-        GCCVERSION: ${{ matrix.GCCVERSION }}
-        MAZ_PUSH_ON_SUCCESS: true
-        CPU_NATIVE: false
-        SLACK: ${{ secrets.SLACK_WEBHOOK_URL }}
-        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-      image: registry.gitlab.com/mazoea-team/docker-ci-build:${{ matrix.IMAGE_TAG }}
     steps:
       - uses: actions/checkout@v2
-
-      - name: notify MS teams
-        uses: ./.github/actions/ms-teams-notification
-        with:
-          github-token: ${{ github.token }}
-          ms-teams-webhook-uri: ${{ secrets.MS_DQ_TEAMS_WEBHOOK_URI }}
-          notification-summary: 'Started [${{ github.repository }}] by [${{ github.actor }}] on [${{ runner.os }}]'
-          notification-color: '17a2b8'
-          timezone: Europe/Bratislava
 
       - name: build
         working-directory: scripts
         run: |
           ./os.specific.sh
-          ./compile.sh
-        if: ${{ success() }}
-
-      - name: notify MS teams
-        uses: ./.github/actions/ms-teams-notification
-        with:
-          github-token: ${{ github.token }}
-          ms-teams-webhook-uri: ${{ secrets.MS_DQ_TEAMS_WEBHOOK_URI }}
-          notification-summary: '&#x2705 Finished [${{ github.repository }}] by [${{ github.actor }}] on [${{ runner.os }}]'
-          notification-color: '28a745'
-          timezone: Europe/Bratislava
-
-      - name: notify MS teams
-        uses: ./.github/actions/ms-teams-notification
-        with:
-          github-token: ${{ github.token }}
-          ms-teams-webhook-uri: ${{ secrets.MS_DQ_TEAMS_WEBHOOK_URI }}
-          notification-summary: 'NOOOOOOOOO FAILED  &#x1F621'
-          notification-color: 'dc3545'
-          timezone: Europe/Bratislava
-        if: ${{ !success() }}
-
-      - name: cleanup - change owner
-        run: |
-          echo chown -R  ${{ needs.configure.outputs.uid }}:${{ needs.configure.outputs.gid }} ./
-          chown -R  ${{ needs.configure.outputs.uid }}:${{ needs.configure.outputs.gid }} ./ || true
-        if: ${{ always() }}
-
+          ./build.sh

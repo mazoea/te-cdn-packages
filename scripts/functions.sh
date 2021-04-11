@@ -26,13 +26,18 @@ TRIMMER="tail -100"
 #     echo '$SLACK' not set - will be ignored!
 # fi
 
+if [[ "x$TE_LIBS_LOGS" == "x" ]]; then
+    export TE_LIBS_LOGS=/tmp/
+fi
+mkdir -p $TE_LIBS_LOGS || true
+
 # echo "Using $TE_LIBS_LOGS as logging directory"
 if [[ "x$TE_LIBS" != "x" ]]; then
     mkdir -p $TE_LIBS || true
-    mkdir -p $TE_LIBS_LOGS || true
     mkdir -p $TE_LIBS/lib || true
     mkdir -p $TE_LIBS/include || true
 fi
+
 
 #=====================================================
 # functions
