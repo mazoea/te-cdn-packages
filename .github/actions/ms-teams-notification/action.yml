@@ -14,6 +14,17 @@ inputs:
   notification-summary:
     description: 'Message to be sent to Microsoft Teams channel'
     required: true 
+
+  notification-failure:
+    description: 'Message to be sent to Microsoft Teams channel if failure'
+    required: false
+  success:
+    description: 'Success flag true/other'
+    required: false
+  text:
+    description: 'Text'
+    required: false
+
   notification-color:
     description: 'Color of notification header line'
     required: true 
