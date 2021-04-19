@@ -2441,7 +2441,7 @@ module.exports = require("child_process");
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createMessageCard = void 0;
-function createMessageCard(notificationSummary, notificationColor, commit, author, runNum, runId, repoName, sha, repoUrl, timestamp) {
+function createMessageCard(notificationSummary, notificationColor, commit, author, runNum, runId, repoName, sha, repoUrl, timestamp, text) {
     let avatar_url = 'https://icons.iconarchive.com/icons/diversity-avatars/avatars/256/batman-icon.png';
     if (author) {
         if (author.avatar_url) {
@@ -2463,7 +2463,8 @@ function createMessageCard(notificationSummary, notificationColor, commit, autho
             {
                 activityTitle: `**CI #${runNum} (commit ${sha.substr(0, 7)})** on [${repoName}](${repoUrl})`,
                 activityImage: avatar_url,
-                activitySubtitle: `by ${commit.data.commit.author.name} [(@${author.login})](${author.html_url}) on ${timestamp}`
+                activitySubtitle: `by ${commit.data.commit.author.name} [(@${author.login})](${author.html_url}) on ${timestamp}`,
+                activityText: text
             }
         ],
         potentialAction: [
@@ -3076,12 +3077,20 @@ function run() {
             const msTeamsWebhookUri = core.getInput('ms-teams-webhook-uri', {
                 required: true
             });
-            const notificationSummary = core.getInput('notification-summary') || 'GitHub Action Notification';
-            const notificationColor = core.getInput('notification-color') || '28a745';
-            const timezone = core.getInput('timezone') || 'UTC';
+            var notificationSummary = core.getInput('notification-summary') || 'GitHub Action Notification';
+            var notificationColor = core.getInput('notification-color') || '28a745';
+            const timezone = core.getInput('timezone') || 'Europe/Bratislava';
             const timestamp = moment_timezone_1.default()
                 .tz(timezone)
                 .format('dddd, MMMM Do YYYY, h:mm:ss a z');
+            const text = core.getInput('text') || '';
+            const success = core.getInput('success') || 'true';
+            // mazoea
+            if (success !== 'true') {
+              notificationColor = 'dc3545';
+              notificationSummary = core.getInput('notification-failure') || 'FAILED';
+            }
+
             const [owner, repo] = (process.env.GITHUB_REPOSITORY || '').split('/');
             const sha = process.env.GITHUB_SHA || '';
             const runId = process.env.GITHUB_RUN_ID || '';
@@ -3092,7 +3101,7 @@ function run() {
             const octokit = new rest_1.Octokit({ auth: `token ${githubToken}` });
             const commit = yield octokit.repos.getCommit(params);
             const author = commit.data.author;
-            const messageCard = yield message_card_1.createMessageCard(notificationSummary, notificationColor, commit, author, runNum, runId, repoName, sha, repoUrl, timestamp);
+            const messageCard = yield message_card_1.createMessageCard(notificationSummary, notificationColor, commit, author, runNum, runId, repoName, sha, repoUrl, timestamp, text);
             console.log(messageCard);
             axios_1.default
                 .post(msTeamsWebhookUri, messageCard)
