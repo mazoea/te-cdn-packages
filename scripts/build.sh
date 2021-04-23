@@ -38,7 +38,7 @@ autoconf --version
 minisep
 
 cd $TE_LIBS
-VER=1.15
+VER=1.16.3
 INSTALLED_VERSION=`automake --version | grep automake | cut -d' ' -f 4 || true`
 if [[ "x$MAKE_AUTOMAKE" == "xtrue" && "x$INSTALLED_VERSION" != "x$VER" ]]; then
     PACKAGE=automake-$VER
@@ -63,7 +63,7 @@ minisep
 
 if [[ "x$CPU_NATIVE" == "xtrue" ]]; then
     echo "Using NATIVE compilation"
-    export MAZCCFLAGS="-O3 -DNDEBUG -march=native -fPIC"
+    export MAZCCFLAGS="-O3 -DNDEBUG -fPIC"
 fi
 
 #=====================================================
