@@ -25,9 +25,9 @@ jobs:
       matrix:
         include:
           - GCCVERSION: 7
-            IMAGE_TAG: u14g7
+            IMAGE_TAG: u18g7
           - GCCVERSION: 8
-            IMAGE_TAG: u14g8
+            IMAGE_TAG: u18g8
     env:
       BUILDER: ci-at-${{ needs.configure.outputs.branch }}
       VERSION: ${{ github.run_id }}
