@@ -88,8 +88,11 @@ fi
 #
 cd $TE_LIBS
 
-VER=1.6.29
-PACKAGE=libpng-$VER
+if [[ "x$LIBPNGVER" == "x" ]]; then
+    LIBPNGVER=1.6.29
+fi
+
+PACKAGE=libpng-$LIBPNGVER
 #URL=http://prdownloads.sourceforge.net/libpng/$PACKAGE.tar.gz?download
 URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
 LIB_SO=$TE_LIBS/lib/libpng16.so
@@ -105,8 +108,11 @@ fi
 #
 cd $TE_LIBS
 
-VER=2.8
-PACKAGE=freetype-$VER
+if [[ "x$FREETYPEVER" == "x" ]]; then
+    FREETYPEVER=2.8
+fi
+
+PACKAGE=freetype-$FREETYPEVER
 #URL="http://download.savannah.gnu.org/releases/freetype/$PACKAGE.tar.gz"
 URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
 LIB_SO=$TE_LIBS/lib/libfreetype.so
