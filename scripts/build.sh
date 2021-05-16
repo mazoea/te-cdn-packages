@@ -147,35 +147,40 @@ fi
 #
 cd $TE_LIBS
 
-VER=9b
-PACKAGE_RAW=jpegsrc.v$VER
-PACKAGE=jpeg-$VER
-#URL=http://www.ijg.org/files/jpegsrc.v$VER.tar.gz
-URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
-LIB_SO=$TE_LIBS/lib/libjpeg.so
-LIB_A=$TE_LIBS/lib/libjpeg.a
-if [[ ! -f $LIB_A ]]; then
-    download_and_unpack_generic $PACKAGE.tar.gz $PACKAGE $URL "tar xzvf"
-    cd $PACKAGE
-    time install_raw $PACKAGE
-    check_ldd $LIB_SO
-fi
+if [[ "x$COMPILE_JPEG" != "xfalse" ]]; then
 
+    VER=9b
+    PACKAGE_RAW=jpegsrc.v$VER
+    PACKAGE=jpeg-$VER
+    #URL=http://www.ijg.org/files/jpegsrc.v$VER.tar.gz
+    URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
+    LIB_SO=$TE_LIBS/lib/libjpeg.so
+    LIB_A=$TE_LIBS/lib/libjpeg.a
+    if [[ ! -f $LIB_A ]]; then
+        download_and_unpack_generic $PACKAGE.tar.gz $PACKAGE $URL "tar xzvf"
+        cd $PACKAGE
+        time install_raw $PACKAGE
+        check_ldd $LIB_SO
+    fi
+fi
 
 #=====================================================
 # libtiff
 #
 cd $TE_LIBS
 
-VER=4.0.8
-PACKAGE=tiff-$VER
-#URL=http://download.osgeo.org/libtiff/$PACKAGE.tar.gz
-URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
-LIB_SO=$TE_LIBS/lib/libtiff.so
-LIB_A=$TE_LIBS/lib/libtiff.a
-if [[ ! -f $LIB_A ]]; then
-    time install_dep_with_autoconf $PACKAGE $URL "--disable-jbig --disable-lzma"
-    check_ldd $LIB_SO
+if [[ "x$COMPILE_TIFF" != "xfalse" ]]; then
+
+    VER=4.0.8
+    PACKAGE=tiff-$VER
+    #URL=http://download.osgeo.org/libtiff/$PACKAGE.tar.gz
+    URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
+    LIB_SO=$TE_LIBS/lib/libtiff.so
+    LIB_A=$TE_LIBS/lib/libtiff.a
+    if [[ ! -f $LIB_A ]]; then
+        time install_dep_with_autoconf $PACKAGE $URL "--disable-jbig --disable-lzma"
+        check_ldd $LIB_SO
+    fi
 fi
 
 sep
