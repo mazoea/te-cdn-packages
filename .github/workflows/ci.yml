@@ -14,8 +14,8 @@ jobs:
     outputs:
       branch: ${{ steps.extract-branch.outputs.branch }}
     steps:
-      - id: extract-branch
-        run: echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
+      - id: conf
+        uses: mazoea/ga-maz/base-conf@master
 
   build-and-deploy:
     needs: configure
