@@ -38,10 +38,19 @@ jobs:
       TE_LIBS: /opt/mazoea/installation
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: mazoea/ga-maz/start@master
+        with:
+          MS_TEAMS_URI: ${{ secrets.MS_DQ_TEAMS_WEBHOOK_URI }}
+
+      - uses: actions/checkout@v3
 
       - name: build
         working-directory: scripts
         run: |
           ./os.specific.sh
           ./build.sh
+
+      - uses: mazoea/ga-maz/end@master
+        with:
+          MS_TEAMS_URI: ${{ secrets.MS_DQ_TEAMS_WEBHOOK_URI }}
+        if: ${{ always() }}
