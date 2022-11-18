@@ -1,4 +1,4 @@
-set IMG=ghcr.io/mazoea/docker-ci-build:u18g8
+set IMG=ghcr.io/mazoea/docker-ci-build:u16g8
 REM set BUILDTYPE=RELWITHDEBINFO
 set BUILDTYPE=RELEASE
 
