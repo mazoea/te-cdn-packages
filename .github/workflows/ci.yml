@@ -1,5 +1,8 @@
 name: ☃ build-and-test
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - win*
 
 env:
   REPO_NAME: te-cdn-packages
