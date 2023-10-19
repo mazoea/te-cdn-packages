@@ -1,6 +1,14 @@
 name: ☃ build-and-test
-on: [push, pull_request]
-
+on:
+  push:
+    branches:    
+      - '**'
+      - '!win*'
+  pull_request:
+    branches:    
+      - '**'
+      - '!win*'
+      
 env:
   REPO_NAME: te-cdn-packages
 
