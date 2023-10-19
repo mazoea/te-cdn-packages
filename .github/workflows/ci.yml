@@ -1,5 +1,9 @@
 name: ☃ build-and-test
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - '*.md'
+  workflow_dispatch:
 
 env:
   REPO_NAME: te-cdn-packages
