@@ -14,10 +14,10 @@ defaults:
 
 jobs:
   build-and-deploy:
-    runs-on: mazoea-linux
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      JOBNAME: build-and-deploy
+      JOBNAME: build-and-test
     strategy:
       fail-fast: false
       matrix:
