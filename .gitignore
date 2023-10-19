@@ -3,3 +3,4 @@ lib/*.so
 lib/*.so.*
 !lib/liblept*
 !lib/libtesseract*
+*.bak

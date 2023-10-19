@@ -13,34 +13,27 @@ defaults:
     shell: bash
 
 jobs:
-  configure:
-    runs-on: ubuntu-latest
-    outputs:
-      branch: ${{ steps.extract-branch.outputs.branch }}
-    steps:
-      - id: conf
-        uses: mazoea/ga-maz/base-conf@master
-
   build-and-deploy:
-    needs: configure
-    runs-on: ubuntu-latest
+    runs-on: mazoea-linux
     timeout-minutes: 15
+    env:
+      JOBNAME: build-and-deploy
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - GCCVERSION: 7
-            IMAGE_TAG: u18g7
           - GCCVERSION: 8
             IMAGE_TAG: u18g8
-    env:
-      BUILDER: ci-at-${{ needs.configure.outputs.branch }}
-      VERSION: ${{ github.run_id }}
-      GCCVERSION: ${{ matrix.GCCVERSION }}
-      CPU_NATIVE: false
-      SLACK: ${{ secrets.SLACK_WEBHOOK_URL }}
-      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-      TE_LIBS: /opt/mazoea/installation
 
+    container: 
+      env:
+        BUILDER: ci-at-${{ github.head_ref || github.ref_name }}
+        VERSION: ${{ github.run_id }}
+        GCCVERSION: ${{ matrix.GCCVERSION }}
+        CPU_NATIVE: false
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        TE_LIBS: /opt/mazoea/installation
+      image: ghcr.io/mazoea/docker-ci-build:${{ matrix.IMAGE_TAG }}
     steps:
       - uses: mazoea/ga-maz/start@master
         with:
