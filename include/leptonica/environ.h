@@ -188,7 +188,9 @@ typedef uintptr_t l_uintptr_t;
  *-------------------------------------------------------------------------*/
 #if !defined(HAVE_CONFIG_H)
 #define  HAVE_FSTATAT     0
-#define  HAVE_DIRFD       0
+#ifndef HAVE_DIRFD
+  #define  HAVE_DIRFD       0
+#endif
 #endif /* ! HAVE_CONFIG_H */
 
 /*--------------------------------------------------------------------*
