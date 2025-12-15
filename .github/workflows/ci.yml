@@ -22,32 +22,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - GCCVERSION: 8
-            IMAGE_TAG: u16g8
+          - IMAGE_TAG: u22g12
 
     container: 
       env:
         BUILDER: ci-at-${{ github.head_ref || github.ref_name }}
         VERSION: ${{ github.run_id }}
-        GCCVERSION: ${{ matrix.GCCVERSION }}
         CPU_NATIVE: false
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        TE_LIBS: /opt/mazoea/installation
       image: ghcr.io/mazoea/docker-ci-build:${{ matrix.IMAGE_TAG }}
     steps:
       - uses: mazoea/ga-maz/start@master
-        with:
-          MS_TEAMS_URI: ${{ secrets.MS_DQ_TEAMS_WEBHOOK_URI }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: build
         working-directory: scripts
         run: |
-          ./os.specific.sh
+          ./ci/os.specific.sh
           ./build.sh
 
       - uses: mazoea/ga-maz/end@master
-        with:
-          MS_TEAMS_URI: ${{ secrets.MS_DQ_TEAMS_WEBHOOK_URI }}
         if: ${{ always() }}

@@ -38,7 +38,6 @@ if [[ "x$TE_LIBS" != "x" ]]; then
     mkdir -p $TE_LIBS/include || true
 fi
 
-
 #=====================================================
 # functions
 #=====================================================
@@ -189,18 +188,6 @@ install_dep() {
     install_raw "$1" "$3" "false"
 }
 
-safergitbitbucket() {
-    export PARAMIDRSA=$1
-    export PARAMCMD=$2
-
-    BITBUCKET=bitbucket.org
-    if [[ "x$PARAMIDRSA" != "x" ]]; then
-        sudo -E ssh-agent bash -c "ssh-add $PARAMIDRSA; git clone $GITDEPTH git@$BITBUCKET:$PARAMCMD"
-    else
-        git clone $GITDEPTH git@$BITBUCKET:$PARAMCMD
-    fi
-}
-
 vcspull() {
     export PARAMIDRSA=$1
     export PARAMREPO=$2
@@ -208,14 +195,46 @@ vcspull() {
     echo "Executing: git clone $GITDEPTH $PARAMREPO"
     FAILED=
     if [[ "x$PARAMIDRSA" != "x" ]]; then
-        sudo -E ssh-agent bash -c "ssh-add $PARAMIDRSA; git clone $GITDEPTH $PARAMREPO" || FAILED=true
+        sudo -E ssh-agent bash -c "ssh-add $PARAMIDRSA; git clone -q $GITDEPTH $PARAMREPO" || FAILED=true
         if [[ "x$FAILED" == "xtrue" ]]; then
+            FAILED=
             sudo -E ssh-agent bash -c "ssh-add $PARAMIDRSA; git clone $GITDEPTH $PARAMREPO" || FAILED=true
         fi
     else
-        git clone $GITDEPTH $PARAMREPO || FAILED=true
+        git clone -q $GITDEPTH $PARAMREPO || FAILED=true
         if [[ "x$FAILED" == "xtrue" ]]; then
-            git clone $GITDEPTH $PARAMREPO || FAILED=true
+            FAILED=
+        git clone $GITDEPTH $PARAMREPO || FAILED=true
         fi
+    fi
+
+        if [[ "x$FAILED" == "xtrue" ]]; then
+        exit 1
+    fi
+}
+
+vcspush() {
+    export PARAMIDRSA=$1
+    export PARAMREMOTE=$2
+    export PARAMBRANCH=$3
+
+    echo "Executing: git push $PARAMREMOTE $PARAMBRANCH"
+    FAILED=
+    if [[ "x$PARAMIDRSA" != "x" ]]; then
+        sudo -E ssh-agent bash -c "ssh-add $PARAMIDRSA; git push $PARAMREMOTE $PARAMBRANCH" || FAILED=true
+        if [[ "x$FAILED" == "xtrue" ]]; then
+            FAILED=
+            sudo -E ssh-agent bash -c "ssh-add $PARAMIDRSA; git push $PARAMREMOTE $PARAMBRANCH" || FAILED=true
+        fi
+    else
+        git push $PARAMREMOTE $PARAMBRANCH || FAILED=true
+        if [[ "x$FAILED" == "xtrue" ]]; then
+            FAILED=
+            git push $PARAMREMOTE $PARAMBRANCH || FAILED=true
+        fi
+        fi
+
+    if [[ "x$FAILED" == "xtrue" ]]; then
+        exit 1
     fi
 }

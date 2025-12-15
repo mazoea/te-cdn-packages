@@ -7,7 +7,7 @@ REM CDN_USE=false
 
 pushd ..
 docker pull %IMG%
-docker run --rm -it -e OUTPUTDIR=./bin-nix -e BUILD_TYPE=%BUILDTYPE% -v %cd%:/te %IMG% /bin/bash -c "cd scripts && ./os.specific.sh && ./build.sh"
+docker run --rm -it -e OUTPUTDIR=./bin-nix -e BUILD_TYPE=%BUILDTYPE% -v %cd%:/te %IMG% /bin/bash -c "cd scripts && ./ci/os.specific.sh && ./build.sh"
 popd
 
 pause
