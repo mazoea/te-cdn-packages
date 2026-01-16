@@ -44,3 +44,35 @@ jobs:
 
       - uses: mazoea/ga-maz/end@master
         if: ${{ always() }}
+
+  build-and-deploy-arm:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    env:
+      JOBNAME: build-and-test-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - IMAGE_TAG: al2023arm64
+
+    container:
+      env:
+        BUILDER: ci-at-${{ github.head_ref || github.ref_name }}
+        VERSION: ${{ github.run_id }}
+        CPU_NATIVE: false
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      image: ghcr.io/mazoea/docker-ci-build:${{ matrix.IMAGE_TAG }}
+    steps:
+      - uses: mazoea/ga-maz/start@master
+
+      - uses: actions/checkout@v4
+
+      - name: build
+        working-directory: scripts
+        run: |
+          ./ci/os.specific.sh
+          ./build.sh
+
+      - uses: mazoea/ga-maz/end@master
+        if: ${{ always() }}
