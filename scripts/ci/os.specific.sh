@@ -32,13 +32,27 @@ if [[ "x$SETVARSONLY" == "xtrue" ]]; then
 fi
 
 locale -a
-update-locale LANG=$LANG || echo "problem setting locale"
+if command -v update-locale &> /dev/null; then
+    update-locale LANG=$LANG || echo "problem setting locale"
+fi
 
-if [[ -f $FS/apt-requirements.txt ]]; then
-    echo "apt-ing"
-    sudo apt-get -qq update
-    echo "apt-ing $FS/apt-requirements.txt"
-    xargs apt-get -q install -y < $FS/apt-requirements.txt
+if command -v apt-get &> /dev/null; then
+    if [[ -f $FS/apt-requirements.txt ]]; then
+        echo "apt-ing"
+        apt-get -qq update
+        echo "apt-ing $FS/apt-requirements.txt"
+        xargs apt-get -q install -y < $FS/apt-requirements.txt
+    fi
+elif command -v dnf &> /dev/null; then
+    echo "dnf-ing"
+    # Basic build tools often missing in minimal images
+    dnf install -y gcc gcc-c++ make tar gzip gawk git hostname diffutils autoconf automake libtool which findutils wget gettext
+    
+    if [[ -f $FS/apt-requirements.txt ]]; then
+        echo "dnf-ing $FS/apt-requirements.txt"
+        # Attempt to install packages listed in apt-requirements.txt
+        xargs dnf install -y < $FS/apt-requirements.txt
+    fi
 fi
 
 if [[ "x$GIT_CONFIGURE" == "xtrue" ]]; then
@@ -49,7 +63,9 @@ if [[ "x$GIT_CONFIGURE" == "xtrue" ]]; then
     git config --global core.filemode false
 fi
 
-sudo updatedb
+if command -v updatedb &> /dev/null; then
+    updatedb
+fi
 echo "whoami `whoami`"
 echo "pwd `pwd`"
 echo "hostname `hostname`"

@@ -28,7 +28,7 @@ if [[ "x$MAKE_AUTOCONF" == "xtrue" && "x$INSTALLED_VERSION" != "x$VER" ]]; then
     URL="https://mazoea.com/cdn/$PACKAGE.tar.gz"
     autoconf --version | grep autoconf || true
     install_dep_with_autoconf $PACKAGE $URL " --prefix=/usr" 
-    sudo cp ./bin/autoconf /usr/bin/autoconf
+    cp ./bin/autoconf /usr/bin/autoconf
     autoconf --version | grep autoconf
 else
     echo "assumed autoconf is present"
@@ -50,8 +50,8 @@ if [[ "x$MAKE_AUTOMAKE" == "xtrue" && "x$INSTALLED_VERSION" != "x$VER" ]]; then
     cd $PACKAGE
     chmod +x ./configure
     # for fuck's sake why, tell me why!
-    ./configure && make bin/aclocal bin/automake && make lib/Automake/Config.pm
-    sudo make install
+    ./configure && make $MAZ_MAKE_JOBS bin/aclocal bin/automake && make $MAZ_MAKE_JOBS lib/Automake/Config.pm
+    make install
     #install_raw $PACKAGE " --prefix=/usr"
     automake --version
 else

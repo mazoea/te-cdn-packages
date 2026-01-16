@@ -4,6 +4,9 @@
 #
 # use env PATH=$PATH for path propagation to sudo
 
+export PATH=$PATH:/usr/sbin:/sbin
+
+
 #=====================================================
 # paths
 #=====================================================
@@ -21,6 +24,14 @@ else
 fi
 
 TRIMMER="tail -100" 
+
+if [[ "x$MAZ_MAKE_JOBS" == "x" ]]; then
+    if [[ -n "$(command -v nproc)" ]]; then
+        MAZ_MAKE_JOBS="-j$(nproc)"
+    else
+        MAZ_MAKE_JOBS="-j2"
+    fi
+fi
 
 # if [[ "x$SLACK" == "x" ]]; then
 #     echo '$SLACK' not set - will be ignored!
@@ -143,7 +154,27 @@ check_ldd() {
 # arg2 - configure argument
 # arg3 - false if no autoconf
 install_raw() {
+    if [[ "x$MAZ_VERBOSE_MAKE" == "xtrue" ]]; then
+        LOCAL_TRIMMER="cat"
+    else
+        LOCAL_TRIMMER="$TRIMMER"
+    fi
+
     if [[ "x$MAZCCFLAGS" == "x" ]]; then MAZCCFLAGS="-O3 -DNDEBUG -fPIC"; fi
+
+    # Update config.guess and config.sub to support new architectures
+    for file in config.guess config.sub; do
+        if [ -f "$file" ]; then
+            echo "Updating $file..."
+            rm -f $file
+            wget --no-check-certificate -nv "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=$file;hb=HEAD" -O "$file"
+        elif [ -f "config/$file" ]; then
+            echo "Updating config/$file..."
+            rm -f config/$file
+            wget --no-check-certificate -nv "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=$file;hb=HEAD" -O "config/$file"
+        fi
+    done
+
     find . -exec touch {} \;
     if [[ "x$3" != "xfalse" ]]; then
     (autoconf || microsep "nothing to do - autoconf") &> $TE_LIBS_LOGS/$1.autoconf.log
@@ -152,26 +183,32 @@ install_raw() {
     chmod +x ./configure
     echo cd `pwd` >> $TE_LIBS_LOGS/__all_commands.txt
     echo CPPFLAGS=\"-I$TE_LIBS/include\" LDFLAGS=\"-I$TE_LIBS/include -L$TE_LIBS/lib -Wl,-rpath -Wl,./ -Wl,-rpath -Wl,../ $EXTRA_CPPFLAGS\" CFLAGS=\"$MAZCCFLAGS\" CXXFLAGS=\"$MAZCCFLAGS\" ./configure --prefix=$TE_LIBS $2 >> $TE_LIBS_LOGS/__all_commands.txt
-    CPPFLAGS="-I$TE_LIBS/include" LDFLAGS="-I$TE_LIBS/include -L$TE_LIBS/lib -Wl,-rpath -Wl,./ -Wl,-rpath -Wl,../ $EXTRA_CPPFLAGS" CFLAGS="$MAZCCFLAGS" CXXFLAGS="$MAZCCFLAGS" ./configure --prefix=$TE_LIBS $2 2>&1 | tee $TE_LIBS_LOGS/$1.configure.log | $TRIMMER
+    CPPFLAGS="-I$TE_LIBS/include" LDFLAGS="-I$TE_LIBS/include -L$TE_LIBS/lib -Wl,-rpath -Wl,./ -Wl,-rpath -Wl,../ $EXTRA_CPPFLAGS" CFLAGS="$MAZCCFLAGS" CXXFLAGS="$MAZCCFLAGS" ./configure --prefix=$TE_LIBS $2 2>&1 | tee $TE_LIBS_LOGS/$1.configure.log | $LOCAL_TRIMMER
     find . -exec touch {} \;
-    make 2>&1 | tee $TE_LIBS_LOGS/$1.make.log | $TRIMMER
+    make $MAZ_MAKE_JOBS 2>&1 | tee $TE_LIBS_LOGS/$1.make.log | $LOCAL_TRIMMER
     # chmod -R o+w ./* > /dev/null
-    (sudo make install 2>&1 || microsep "nothing to do - make install") | tee $TE_LIBS_LOGS/$1.make.install.log | $TRIMMER
-    #sudo make check
-    sudo ldconfig
+    (make install 2>&1 || microsep "nothing to do - make install") | tee $TE_LIBS_LOGS/$1.make.install.log | $LOCAL_TRIMMER
+    #make check
+    ldconfig
 }
 
 install_raw_alt() {
+    if [[ "x$MAZ_VERBOSE_MAKE" == "xtrue" ]]; then
+        LOCAL_TRIMMER="cat"
+    else
+        LOCAL_TRIMMER="$TRIMMER"
+    fi
+
     if [[ "x$MAZCCFLAGS" == "x" ]]; then MAZCCFLAGS="-O3 -DNDEBUG -fPIC"; fi
     find . -exec touch {} \;
     autoconf > $TE_LIBS_LOGS/$1.autoconf.log 2>&1
     echo cd `pwd` >> $TE_LIBS_LOGS/__all_commands.txt
     echo LDFLAGS=\"-L$TE_LIBS/lib -Wl,-rpath -Wl,./ -Wl,-rpath -Wl,../ -Wl,-rpath -Wl,$TE_LIBS/lib\" CFLAGS=\"$MAZCCFLAGS\" CXXFLAGS=\"$MAZCCFLAGS\" ./configure --prefix=$TE_LIBS $2 >> $TE_LIBS_LOGS/__all_commands.txt 
     LDFLAGS="-L$TE_LIBS/lib -Wl,-rpath -Wl,./ -Wl,-rpath -Wl,../ -Wl,-rpath -Wl,$TE_LIBS/lib" CFLAGS="$MAZCCFLAGS" CXXFLAGS="$MAZCCFLAGS" ./configure --prefix=$TE_LIBS $2 > $TE_LIBS_LOGS/$1.configure.log 2>&1
-    make 2>&1 | tee $TE_LIBS_LOGS/$1.make.log | tail -n 30
-    sudo make altinstall 2>&1 | tee $TE_LIBS_LOGS/$1.make.install.log | $TRIMMER
-    #sudo make check
-    sudo ldconfig
+    make $MAZ_MAKE_JOBS 2>&1 | tee $TE_LIBS_LOGS/$1.make.log | $LOCAL_TRIMMER
+    make altinstall 2>&1 | tee $TE_LIBS_LOGS/$1.make.install.log | $LOCAL_TRIMMER
+    #make check
+    ldconfig
 }
 
 install_dep_with_autoconf() {
@@ -195,10 +232,10 @@ vcspull() {
     echo "Executing: git clone $GITDEPTH $PARAMREPO"
     FAILED=
     if [[ "x$PARAMIDRSA" != "x" ]]; then
-        sudo -E ssh-agent bash -c "ssh-add $PARAMIDRSA; git clone -q $GITDEPTH $PARAMREPO" || FAILED=true
+        ssh-agent bash -c "ssh-add $PARAMIDRSA; git clone -q $GITDEPTH $PARAMREPO" || FAILED=true
         if [[ "x$FAILED" == "xtrue" ]]; then
             FAILED=
-            sudo -E ssh-agent bash -c "ssh-add $PARAMIDRSA; git clone $GITDEPTH $PARAMREPO" || FAILED=true
+            ssh-agent bash -c "ssh-add $PARAMIDRSA; git clone $GITDEPTH $PARAMREPO" || FAILED=true
         fi
     else
         git clone -q $GITDEPTH $PARAMREPO || FAILED=true
@@ -221,10 +258,10 @@ vcspush() {
     echo "Executing: git push $PARAMREMOTE $PARAMBRANCH"
     FAILED=
     if [[ "x$PARAMIDRSA" != "x" ]]; then
-        sudo -E ssh-agent bash -c "ssh-add $PARAMIDRSA; git push $PARAMREMOTE $PARAMBRANCH" || FAILED=true
+        ssh-agent bash -c "ssh-add $PARAMIDRSA; git push $PARAMREMOTE $PARAMBRANCH" || FAILED=true
         if [[ "x$FAILED" == "xtrue" ]]; then
             FAILED=
-            sudo -E ssh-agent bash -c "ssh-add $PARAMIDRSA; git push $PARAMREMOTE $PARAMBRANCH" || FAILED=true
+            ssh-agent bash -c "ssh-add $PARAMIDRSA; git push $PARAMREMOTE $PARAMBRANCH" || FAILED=true
         fi
     else
         git push $PARAMREMOTE $PARAMBRANCH || FAILED=true
