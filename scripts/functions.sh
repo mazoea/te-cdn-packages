@@ -81,24 +81,6 @@ entered() {
     echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 }
 
-info() {
-    if [[ "x$MAZNOTIFY" == "xtrue" && "x$SLACK" != "x" ]]; then
-        curl -s -X POST --data-urlencode "payload={\"pretext\": \"$2\", \"text\": \"$1\", \"username\": \"$BUILDINFO-$REPO_NAME\", \"color\": \"#36a64f\", \"icon_emoji\": \":checkered_flag:\"}" "$SLACK" > /dev/null
-    fi
-}
-
-warn() {
-    if [[ "x$MAZNOTIFY" == "xtrue" && "x$SLACK" != "x" ]]; then
-        curl -s -X POST --data-urlencode "payload={\"pretext\": \"$2\", \"text\": \"$1\", \"username\": \"$BUILDINFO-$REPO_NAME\", \"color\": \"#ff0000\", \"icon_emoji\": \":point_up:\"}" "$SLACK" > /dev/null
-    fi
-}
-
-result() {
-    if [[ "x$MAZNOTIFYRESULT" == "xtrue" && "x$SLACK" != "x" ]]; then
-        curl -s -X POST --data-urlencode "payload={\"pretext\": \"$2\", \"text\": \"$1\", \"username\": \"$BUILDINFO-$REPO_NAME\", \"color\": \"#36a64f\", \"icon_emoji\": \":checkered_flag:\"}" "$SLACK" > /dev/null
-    fi
-}
-
 download_and_unpack_generic() {
     FILE=$1
     PACKAGE=$2
@@ -189,7 +171,13 @@ install_raw() {
     # chmod -R o+w ./* > /dev/null
     (make install 2>&1 || microsep "nothing to do - make install") | tee $TE_LIBS_LOGS/$1.make.install.log | $LOCAL_TRIMMER
     #make check
-    ldconfig
+    if [[ -n "$(command -v ldconfig)" ]]; then
+        ldconfig
+    elif [[ -x "/sbin/ldconfig" ]]; then
+        /sbin/ldconfig
+    else
+        microsep "ldconfig not available - skipping"
+    fi
 }
 
 install_raw_alt() {
@@ -207,8 +195,14 @@ install_raw_alt() {
     LDFLAGS="-L$TE_LIBS/lib -Wl,-rpath -Wl,./ -Wl,-rpath -Wl,../ -Wl,-rpath -Wl,$TE_LIBS/lib" CFLAGS="$MAZCCFLAGS" CXXFLAGS="$MAZCCFLAGS" ./configure --prefix=$TE_LIBS $2 > $TE_LIBS_LOGS/$1.configure.log 2>&1
     make $MAZ_MAKE_JOBS 2>&1 | tee $TE_LIBS_LOGS/$1.make.log | $LOCAL_TRIMMER
     make altinstall 2>&1 | tee $TE_LIBS_LOGS/$1.make.install.log | $LOCAL_TRIMMER
-    #make check
-    ldconfig
+    # make check
+    if [[ -n "$(command -v ldconfig)" ]]; then
+        ldconfig
+    elif [[ -x "/sbin/ldconfig" ]]; then
+        /sbin/ldconfig
+    else
+        microsep "ldconfig not available - skipping"
+    fi
 }
 
 install_dep_with_autoconf() {
@@ -241,11 +235,11 @@ vcspull() {
         git clone -q $GITDEPTH $PARAMREPO || FAILED=true
         if [[ "x$FAILED" == "xtrue" ]]; then
             FAILED=
-        git clone $GITDEPTH $PARAMREPO || FAILED=true
+            git clone $GITDEPTH $PARAMREPO || FAILED=true
         fi
     fi
 
-        if [[ "x$FAILED" == "xtrue" ]]; then
+    if [[ "x$FAILED" == "xtrue" ]]; then
         exit 1
     fi
 }
@@ -269,7 +263,7 @@ vcspush() {
             FAILED=
             git push $PARAMREMOTE $PARAMBRANCH || FAILED=true
         fi
-        fi
+    fi
 
     if [[ "x$FAILED" == "xtrue" ]]; then
         exit 1
