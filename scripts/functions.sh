@@ -6,6 +6,8 @@
 
 export PATH=$PATH:/usr/sbin:/sbin
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 
 #=====================================================
 # paths
@@ -144,16 +146,22 @@ install_raw() {
 
     if [[ "x$MAZCCFLAGS" == "x" ]]; then MAZCCFLAGS="-O3 -DNDEBUG -fPIC"; fi
 
-    # Update config.guess and config.sub to support new architectures
+    # Update config.guess and config.sub to support new architectures using local repo copies
+    GNUCONFIG_DIR=${GNUCONFIG_DIR:-$SCRIPT_DIR/gnuconfig}
     for file in config.guess config.sub; do
-        if [ -f "$file" ]; then
-            echo "Updating $file..."
-            rm -f $file
-            wget --no-check-certificate -nv "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=$file;hb=HEAD" -O "$file"
-        elif [ -f "config/$file" ]; then
-            echo "Updating config/$file..."
-            rm -f config/$file
-            wget --no-check-certificate -nv "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=$file;hb=HEAD" -O "config/$file"
+        REPO_FILE="$GNUCONFIG_DIR/$file"
+
+        if [ ! -f "$REPO_FILE" ]; then
+            echo "No repo copy for $file in $GNUCONFIG_DIR; skipping update"
+            continue
+        fi
+
+        if [ -f "$file" ] && [ "$REPO_FILE" -nt "$file" ]; then
+            echo "Updating $file from $REPO_FILE..."
+            cp -f "$REPO_FILE" "$file"
+        elif [ -f "config/$file" ] && [ "$REPO_FILE" -nt "config/$file" ]; then
+            echo "Updating config/$file from $REPO_FILE..."
+            cp -f "$REPO_FILE" "config/$file"
         fi
     done
 
