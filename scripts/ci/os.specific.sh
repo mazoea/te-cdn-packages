@@ -45,9 +45,6 @@ if command -v apt-get &> /dev/null; then
     fi
 elif command -v dnf &> /dev/null; then
     echo "dnf-ing"
-    # Basic build tools often missing in minimal images
-    dnf install -y gcc gcc-c++ make tar gzip gawk git hostname diffutils autoconf automake libtool which findutils wget gettext
-    
     if [[ -f $FS/apt-requirements.txt ]]; then
         echo "dnf-ing $FS/apt-requirements.txt"
         # Attempt to install packages listed in apt-requirements.txt
