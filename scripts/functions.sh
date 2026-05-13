@@ -1,8 +1,7 @@
 #!/bin/bash
 #
-# part of Mazoea TE QA
+# part of Mazoea TE build pipeline
 #
-# use env PATH=$PATH for path propagation to sudo
 
 export PATH=$PATH:/usr/sbin:/sbin
 
@@ -144,16 +143,24 @@ install_raw() {
 
     if [[ "x$MAZCCFLAGS" == "x" ]]; then MAZCCFLAGS="-O3 -DNDEBUG -fPIC"; fi
 
-    # Update config.guess and config.sub to support new architectures
+    # Best-effort refresh of config.guess and config.sub to support new
+    # architectures. Tolerant of upstream errors (e.g. 502 from gitweb): on
+    # failure the existing file is kept untouched so the build can proceed.
     for file in config.guess config.sub; do
+        URL="https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=$file;hb=HEAD"
         if [ -f "$file" ]; then
-            echo "Updating $file..."
-            rm -f $file
-            wget --no-check-certificate -nv "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=$file;hb=HEAD" -O "$file"
+            TARGET="$file"
         elif [ -f "config/$file" ]; then
-            echo "Updating config/$file..."
-            rm -f config/$file
-            wget --no-check-certificate -nv "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=$file;hb=HEAD" -O "config/$file"
+            TARGET="config/$file"
+        else
+            continue
+        fi
+        echo "Refreshing $TARGET..."
+        if wget --no-check-certificate -nv "$URL" -O "$TARGET.new" && [ -s "$TARGET.new" ]; then
+            mv "$TARGET.new" "$TARGET"
+        else
+            echo "  refresh failed; keeping existing $TARGET"
+            rm -f "$TARGET.new"
         fi
     done
 
@@ -172,9 +179,9 @@ install_raw() {
     (make install 2>&1 || microsep "nothing to do - make install") | tee $TE_LIBS_LOGS/$1.make.install.log | $LOCAL_TRIMMER
     #make check
     if [[ -n "$(command -v ldconfig)" ]]; then
-        ldconfig
+        ldconfig || microsep "ldconfig failed - continuing"
     elif [[ -x "/sbin/ldconfig" ]]; then
-        /sbin/ldconfig
+        /sbin/ldconfig || microsep "ldconfig failed - continuing"
     else
         microsep "ldconfig not available - skipping"
     fi
@@ -197,9 +204,9 @@ install_raw_alt() {
     make altinstall 2>&1 | tee $TE_LIBS_LOGS/$1.make.install.log | $LOCAL_TRIMMER
     # make check
     if [[ -n "$(command -v ldconfig)" ]]; then
-        ldconfig
+        ldconfig || microsep "ldconfig failed - continuing"
     elif [[ -x "/sbin/ldconfig" ]]; then
-        /sbin/ldconfig
+        /sbin/ldconfig || microsep "ldconfig failed - continuing"
     else
         microsep "ldconfig not available - skipping"
     fi
@@ -263,7 +270,7 @@ vcspush() {
             FAILED=
             git push $PARAMREMOTE $PARAMBRANCH || FAILED=true
         fi
-        fi
+    fi
 
     if [[ "x$FAILED" == "xtrue" ]]; then
         exit 1
