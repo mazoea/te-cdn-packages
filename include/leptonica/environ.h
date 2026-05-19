@@ -65,20 +65,36 @@ typedef unsigned int uintptr_t;
 
 #endif /* _MSC_VER */
 
-/* Windows specifics */
-#ifdef _WIN32
-  /* DLL EXPORTS and IMPORTS */
-  #if defined(LIBLEPT_EXPORTS)
-    #define LEPT_DLL __declspec(dllexport)
-  #elif defined(LIBLEPT_IMPORTS)
-    #define LEPT_DLL __declspec(dllimport)
-  #else
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) && !defined(__STDC_NO_ATOMICS__)
+#include <stdatomic.h>
+typedef atomic_int l_atomic;
+#else
+typedef int l_atomic;
+#endif
+
+#ifndef LEPT_DLL
+  /* Windows specifics */
+  #ifdef _WIN32
+    /* DLL EXPORTS and IMPORTS */
+    #if defined(LIBLEPT_EXPORTS)
+      #define LEPT_DLL __declspec(dllexport)
+    #elif defined(LIBLEPT_IMPORTS)
+      #define LEPT_DLL __declspec(dllimport)
+    #else
+      #define LEPT_DLL
+    #endif
+  #else  /* non-Windows specifics */
     #define LEPT_DLL
-  #endif
-#else  /* non-Windows specifics */
+  #endif  /* _WIN32 */
+#endif  /* LEPT_DLL */
+
+#ifndef _WIN32  /* non-Windows specifics */
   #include <stdint.h>
-  #define LEPT_DLL
 #endif  /* _WIN32 */
+
+#ifdef __APPLE__
+  #include <Availability.h>
+#endif /* __APPLE__ */
 
 typedef intptr_t l_intptr_t;
 typedef uintptr_t l_uintptr_t;
@@ -132,7 +148,7 @@ typedef uintptr_t l_uintptr_t;
    * (HAVE_LIBJP2K == 1) that is >= 2.1, set the path to the openjpeg.h    *
    * header in angle brackets here.                                        *
    *-----------------------------------------------------------------------*/
-  #define  LIBJP2K_HEADER   <openjpeg-2.3/openjpeg.h>
+  #define  LIBJP2K_HEADER   <openjpeg-2.5/openjpeg.h>
 
 #endif  /* ! HAVE_CONFIG_H etc. */
 
@@ -188,9 +204,7 @@ typedef uintptr_t l_uintptr_t;
  *-------------------------------------------------------------------------*/
 #if !defined(HAVE_CONFIG_H)
 #define  HAVE_FSTATAT     0
-#ifndef HAVE_DIRFD
-  #define  HAVE_DIRFD       0
-#endif
+#define  HAVE_DIRFD       0
 #endif /* ! HAVE_CONFIG_H */
 
 /*--------------------------------------------------------------------*
