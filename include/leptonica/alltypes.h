@@ -39,6 +39,7 @@
     /* Generic and non-image-specific containers */
 #include "array.h"
 #include "bbuffer.h"
+#include "hashmap.h"
 #include "heap.h"
 #include "list.h"
 #include "ptra.h"
@@ -50,6 +51,7 @@
 #include "arrayaccess.h"
 #include "bmf.h"
 #include "ccbord.h"
+#include "colorfill.h"
 #include "dewarp.h"
 #include "gplot.h"
 #include "imageio.h"
@@ -61,6 +63,12 @@
 #include "stringcode.h"
 #include "sudoku.h"
 #include "watershed.h"
+
+    /* Struct definitions (upstream 1.87 moved these to _internal.h;
+       we keep them public for backward compatibility) */
+#include "pix_internal.h"
+#include "array_internal.h"
+#include "ccbord_internal.h"
 
 
 #endif /* LEPTONICA_ALLTYPES_H */
