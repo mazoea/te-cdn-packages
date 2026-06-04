@@ -131,6 +131,43 @@ check_ldd() {
     minisep
 }
 
+apply_warning_patches() {
+    local LOCAL_PACKAGE="$1"
+    local LOCAL_FILE
+
+    case "$LOCAL_PACKAGE" in
+        libpng-*)
+            LOCAL_FILE=contrib/libtests/pngstest.c
+            if [[ -f "$LOCAL_FILE" ]]; then
+                if grep -q 'char        tmpfile_name\[32\];' "$LOCAL_FILE"; then
+                    microsep "Patching $LOCAL_PACKAGE temp file buffer"
+                    sed -i 's/char        tmpfile_name\[32\];/char        tmpfile_name[64];/' "$LOCAL_FILE"
+                fi
+                if grep -q 'char name\[32\];' "$LOCAL_FILE"; then
+                    microsep "Patching $LOCAL_PACKAGE output name buffer"
+                    sed -i 's/char name\[32\];/char name[64];/' "$LOCAL_FILE"
+                fi
+                if grep -q 'sprintf(name, "%s%d.png", tmpf, ++counter);' "$LOCAL_FILE"; then
+                    microsep "Patching $LOCAL_PACKAGE output name formatting"
+                    sed -i 's/sprintf(name, "%s%d.png", tmpf, ++counter);/snprintf(name, sizeof name, "%s%d.png", tmpf, ++counter);/' "$LOCAL_FILE"
+                fi
+            fi
+            ;;
+        freetype-*)
+            LOCAL_FILE=src/truetype/ttgload.c
+            if [[ -f "$LOCAL_FILE" ]] && \
+               grep -q 'loader->stream = &inc_stream;' "$LOCAL_FILE" && \
+               ! grep -q 'loader->stream = face->root.stream;' "$LOCAL_FILE"; then
+                microsep "Patching $LOCAL_PACKAGE incremental stream restore"
+                sed -i '/^[[:space:]]*if ( glyph_data_loaded )/i\
+    /* restore the original stream */\
+    loader->stream = face->root.stream;\
+' "$LOCAL_FILE"
+            fi
+            ;;
+    esac
+}
+
 # arg1 - project name used for logs
 # arg2 - configure argument
 # arg3 - false if no autoconf
@@ -216,6 +253,7 @@ install_dep_with_autoconf() {
     cd $TE_LIBS
     download_and_unpack_tar_gz $1 $2
     cd $1
+    apply_warning_patches "$1"
     install_raw "$1" "$3"
 }
 
@@ -223,6 +261,7 @@ install_dep() {
     cd $TE_LIBS
     download_and_unpack_tar_gz $1 $2
     cd $1
+    apply_warning_patches "$1"
     install_raw "$1" "$3" "false"
 }
 

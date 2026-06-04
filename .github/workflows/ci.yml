@@ -7,6 +7,7 @@ on:
 
 env:
   REPO_NAME: te-cdn-packages
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 defaults:
   run:
@@ -34,7 +35,7 @@ jobs:
     steps:
       - uses: mazoea/ga-maz/start@master
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: build
         working-directory: scripts
